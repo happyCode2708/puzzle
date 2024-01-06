@@ -10,18 +10,21 @@ import { navigation } from '../utils/navigation';
 import { RoundedBox } from '../ui/RoundedBox.ts';
 import { RoundedRectangle } from '../ui/RoundedRectangle.ts';
 import { GameSlider } from '../ui/GameSlider.ts';
+import { FormContainer } from '../ui/FormContainer.ts';
+import { GameRadioGroup } from '../ui/GameRadioGroup.ts';
 
 class SettingsPopup extends PIXI.Container {
   private masterSlider;
   private bgmSlider;
-  // private sfxSlider;
+  private sfxSlider;
 
   private panel: PIXI.Container;
   private title: Label;
   private popupMask: PIXI.Sprite;
   private doneButton: LargeButton;
   private panelBase: RoundedRectangle;
-  private formContainer: PIXI.Container;
+  private formContainer: FormContainer;
+  private dificultyModeSwitch: GameRadioGroup;
   // private bg: Sprite;
 
   constructor() {
@@ -38,34 +41,53 @@ class SettingsPopup extends PIXI.Container {
 
     //* create rouned box;
     this.panelBase = new RoundedRectangle({
-      width: 400,
-      height: 600,
+      width: 350,
+      height: 650,
       radius: 40,
       fill: '0x2c136c',
     });
     this.panel.addChild(this.panelBase);
 
     //* create the title
-    this.title = new Label('Setting', {
+    this.title = new Label('Settings', {
       fill: 0xffd579,
       fontSize: 50,
     });
     this.panel.addChild(this.title);
 
     //* create new container for all setting
-    this.formContainer = new PIXI.Container();
+    // this.formContainer = new PIXI.Container();
+    this.formContainer = new FormContainer({ gap: 65 });
     //* create volumne slider;
-    this.masterSlider = new GameSlider({});
-    this.formContainer.addChild(this.masterSlider);
+    this.masterSlider = new GameSlider({ label: 'Master Volume' });
+    this.formContainer.addItem(this.masterSlider);
 
     //* create bgm volume slider;
-    this.bgmSlider = new GameSlider({});
-    this.bgmSlider.y = 100;
-    this.formContainer.addChild(this.bgmSlider);
+    this.bgmSlider = new GameSlider({ label: 'BGM Volume' });
+    this.formContainer.addItem(this.bgmSlider);
 
+    //* create bgm volume slider;
+    this.sfxSlider = new GameSlider({ label: 'SFX Volume' });
+    this.formContainer.addItem(this.sfxSlider);
+
+    //* create radio button
+    this.dificultyModeSwitch = new GameRadioGroup({
+      itemLabels: [
+        {
+          label: 'Easy Mode',
+        },
+        { label: 'Normal Mode' },
+        { label: 'hard Mode' },
+      ],
+    });
+    this.formContainer.addItem(this.dificultyModeSwitch);
+
+    //* set up form container and add to the panel
     this.formContainer.x =
       -this.panelBase.width / 2 +
-      (this.panelBase.width - this.masterSlider.width) / 2;
+      (this.panelBase.width - this.masterSlider.width) / 2 +
+      this.masterSlider.handleRadius;
+
     this.formContainer.y = -this.panelBase.height / 2 + 150;
 
     this.panel.addChild(this.formContainer);
@@ -109,7 +131,11 @@ class SettingsPopup extends PIXI.Container {
     this.popupMask.alpha = 0;
     this.panel.pivot.y = -400;
     gsap.to(this.popupMask, { alpha: 0.8, duration: 0.2, ease: 'linear' });
-    await gsap.to(this.panel.pivot, { y: 0, duration: 0.3, ease: 'back.out' });
+    await gsap.to(this.panel.pivot, {
+      y: 0,
+      duration: 0.3,
+      ease: 'back.out',
+    });
   }
 
   /** Dismiss the popup, animated */
