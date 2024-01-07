@@ -7,11 +7,11 @@ import { LargeButton } from '../ui/LargeButton.ts';
 
 import { ImageButton } from '../ui/ImageButton.ts';
 import { navigation } from '../utils/navigation';
-import { RoundedBox } from '../ui/RoundedBox.ts';
 import { RoundedRectangle } from '../ui/RoundedRectangle.ts';
 import { GameSlider } from '../ui/GameSlider.ts';
 import { FormContainer } from '../ui/FormContainer.ts';
 import { GameRadioGroup } from '../ui/GameRadioGroup.ts';
+import { userSettings } from '../utils/userSettings.ts';
 
 class SettingsPopup extends PIXI.Container {
   private masterSlider;
@@ -59,15 +59,33 @@ class SettingsPopup extends PIXI.Container {
     // this.formContainer = new PIXI.Container();
     this.formContainer = new FormContainer({ gap: 65 });
     //* create volumne slider;
-    this.masterSlider = new GameSlider({ label: 'Master Volume' });
+    this.masterSlider = new GameSlider({
+      label: 'Master Volume',
+      value: userSettings.getMasterVolume() * 100,
+    });
+    this.masterSlider.onUpdate.connect((v) => {
+      userSettings.setMasterVolume(v / 100);
+    });
     this.formContainer.addItem(this.masterSlider);
 
     //* create bgm volume slider;
-    this.bgmSlider = new GameSlider({ label: 'BGM Volume' });
+    this.bgmSlider = new GameSlider({
+      label: 'BGM Volume',
+      value: userSettings.getBgmVolume() * 100,
+    });
+    this.bgmSlider.onUpdate.connect((v) => {
+      userSettings.setBgmVolume(v / 100);
+    });
     this.formContainer.addItem(this.bgmSlider);
 
-    //* create bgm volume slider;
-    this.sfxSlider = new GameSlider({ label: 'SFX Volume' });
+    //* create sfx volume slider;
+    this.sfxSlider = new GameSlider({
+      label: 'SFX Volume',
+      value: userSettings.getSfxVolume() * 100,
+    });
+    this.sfxSlider.onUpdate.connect((v) => {
+      userSettings.setSfxVolume(v / 100);
+    });
     this.formContainer.addItem(this.sfxSlider);
 
     //* create radio button
@@ -80,13 +98,12 @@ class SettingsPopup extends PIXI.Container {
         { label: 'hard Mode' },
       ],
     });
-    this.formContainer.addItem(this.dificultyModeSwitch);
+    this.formContainer.addItem(this.dificultyModeSwitch, { x: 15 });
 
     //* set up form container and add to the panel
     this.formContainer.x =
       -this.panelBase.width / 2 +
-      (this.panelBase.width - this.masterSlider.width) / 2 +
-      this.masterSlider.handleRadius;
+      (this.panelBase.width - this.masterSlider.width) / 2;
 
     this.formContainer.y = -this.panelBase.height / 2 + 150;
 
@@ -118,9 +135,8 @@ class SettingsPopup extends PIXI.Container {
     this.doneButton.y = 200;
   }
 
-  private init() {
-    // this.panel.addChild(this.masterSlider);
-  }
+  //* the same as init function will be call by navigation if exist as default
+  public async prepare() {}
   /** Present the popup, animated */
   public async show() {
     // if (navigation.currentScreen) {
