@@ -1,4 +1,4 @@
-import { Container, Sprite, Graphics } from 'pixi.js';
+import { Container, Sprite } from 'pixi.js';
 import * as _ from 'lodash';
 
 type SetupOptions = {
@@ -8,6 +8,7 @@ type SetupOptions = {
 };
 
 export class GameGrid extends Container {
+  private gameGridContent: Container;
   private base: Container;
 
   private shadow: Container;
@@ -15,13 +16,16 @@ export class GameGrid extends Container {
     super();
 
     //* build the grid
+    this.gameGridContent = new Container();
+
     this.base = new Container();
-    this.addChild(this.base);
+    this.gameGridContent.addChild(this.base);
 
     //* build the shadow grid;
     this.shadow = new Container();
-    this.shadow.y = 8;
-    this.addChild(this.shadow);
+    this.gameGridContent.addChild(this.shadow);
+
+    this.addChild(this.gameGridContent);
   }
 
   public setup(options: SetupOptions) {
@@ -35,22 +39,13 @@ export class GameGrid extends Container {
         blockContainer.addChild(block);
         const x = c * tileSize;
         const y = r * tileSize;
-        // block.anchor.set(0.5);
 
         blockContainer.width = tileSize;
         blockContainer.height = tileSize;
         blockContainer.x = x;
         blockContainer.y = y;
-        // block.anchor.set(0.5);
 
         this.base.addChild(blockContainer);
-
-        //* create the shadow of bottomline
-        if (r === rows - 1) {
-          const newBlock = Sprite.from('shelf-block');
-          // const shadowBlockContainer = _.clone(blockContainer);
-          this.shadow.addChild(newBlock);
-        }
       }
     }
 
@@ -104,10 +99,32 @@ export class GameGrid extends Container {
       this.base.addChild(blockContainer);
     }
 
+    //* create the shadow of bottomline
+    for (let c = -1; c < columns + 1; c++) {
+      const textureImage =
+        c === -1 || c === columns ? 'shelf-corner' : 'shelf-block';
+      const shadowBlock = Sprite.from(textureImage);
+      shadowBlock.tint = 0x000000;
+      shadowBlock.alpha = 0.3;
+      shadowBlock.x = tileSize * c;
+      shadowBlock.y = tileSize * rows;
+      shadowBlock.width = tileSize;
+      shadowBlock.height = tileSize;
+      if (c === columns || c == -1) {
+        shadowBlock.anchor.set(0.5);
+        shadowBlock.rotation = c === -1 ? -Math.PI * 0.5 : Math.PI;
+        shadowBlock.x = shadowBlock.x + shadowBlock.width / 2;
+        shadowBlock.y = shadowBlock.y + shadowBlock.width / 2;
+      }
+      this.shadow.addChild(shadowBlock);
+    }
+
     const offsetX = (columns * tileSize) / 2;
     const offsetY = (rows * tileSize) / 2;
-    this.base.x = this.base.x - offsetX;
-    this.base.y = this.base.y - offsetY;
+    this.gameGridContent.x = this.gameGridContent.x - offsetX;
+    this.gameGridContent.y = this.gameGridContent.y - offsetY;
+
+    this.shadow.y = -tileSize * 0.75;
   }
 
   private getBooks(index: number) {
