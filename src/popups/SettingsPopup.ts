@@ -37,12 +37,16 @@ class SettingsPopup extends PIXI.Container {
     this.popupMask.tint = 0x0a0025;
     this.popupMask.interactive = true;
 
+    this.popupMask.onclick = () => {
+      navigation.dismissPopup();
+    };
+
     this.addChild(this.popupMask);
 
     //* create rouned box;
     this.panelBase = new RoundedRectangle({
       width: 350,
-      height: 650,
+      height: 600,
       radius: 40,
       fill: '0x2c136c',
     });
@@ -57,7 +61,7 @@ class SettingsPopup extends PIXI.Container {
 
     //* create new container for all setting
     // this.formContainer = new PIXI.Container();
-    this.formContainer = new FormContainer({ gap: 65 });
+    this.formContainer = new FormContainer({ gap: 5 });
     //* create volumne slider;
     this.masterSlider = new GameSlider({
       label: 'Master Volume',
@@ -100,13 +104,6 @@ class SettingsPopup extends PIXI.Container {
     });
     this.formContainer.addItem(this.dificultyModeSwitch, { x: 15 });
 
-    //* set up form container and add to the panel
-    this.formContainer.x =
-      -this.panelBase.width / 2 +
-      (this.panelBase.width - this.masterSlider.width) / 2;
-
-    this.formContainer.y = -this.panelBase.height / 2 + 150;
-
     this.panel.addChild(this.formContainer);
     //* create done button
     this.doneButton = new LargeButton({
@@ -118,7 +115,17 @@ class SettingsPopup extends PIXI.Container {
       navigation.dismissPopup();
     });
 
-    this.panel.addChild(this.doneButton);
+    this.formContainer.addItem(this.doneButton, {
+      y: 365,
+      x: this.doneButton.width / 2 - 20,
+    });
+
+    //* set up form container and add to the panel
+    this.formContainer.x =
+      -this.panelBase.width / 2 +
+      (this.panelBase.width - this.masterSlider.width) / 2;
+
+    this.formContainer.y = -this.panelBase.height / 2 + 150;
 
     //* add panel to setting popup object
     this.addChild(this.panel);
@@ -132,7 +139,6 @@ class SettingsPopup extends PIXI.Container {
     this.panel.y = height * 0.5;
     //* set posiiton for each element
     this.title.y = -this.panelBase.height / 2 + 50;
-    this.doneButton.y = 200;
   }
 
   //* the same as init function will be call by navigation if exist as default
