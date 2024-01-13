@@ -1,0 +1,344 @@
+{
+  "bundles": [
+    {
+      "name": "default",
+      "assets": []
+    },
+    {
+      "name": "common",
+      "assets": [
+        {
+          "alias": [
+            "common/bgm-game.mp3"
+          ],
+          "src": [
+            "common/bgm-game.mp3",
+            "common/bgm-game.ogg"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "common/bgm-main.mp3"
+          ],
+          "src": [
+            "common/bgm-main.mp3",
+            "common/bgm-main.ogg"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "common/common-atlas/common-atlas.json"
+          ],
+          "src": [
+            "common/common-atlas/common-atlas@1x.json",
+            "common/common-atlas/common-atlas@0.5x.json"
+          ],
+          "data": {
+            "tags": {
+              "tps": true,
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "common/dragon-skeleton.atlas"
+          ],
+          "src": [
+            "common/dragon-skeleton.atlas"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "common/dragon-skeleton.json"
+          ],
+          "src": [
+            "common/dragon-skeleton.json"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "common/dragon-skeleton.png"
+          ],
+          "src": [
+            "common/dragon-skeleton.png"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "common/sfx-bubble.wav"
+          ],
+          "src": [
+            "common/sfx-bubble.mp3",
+            "common/sfx-bubble.ogg"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "common/sfx-correct.wav"
+          ],
+          "src": [
+            "common/sfx-correct.mp3",
+            "common/sfx-correct.ogg"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "common/sfx-countdown.wav"
+          ],
+          "src": [
+            "common/sfx-countdown.mp3",
+            "common/sfx-countdown.ogg"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "common/sfx-hover.wav"
+          ],
+          "src": [
+            "common/sfx-hover.mp3",
+            "common/sfx-hover.ogg"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "common/sfx-incorrect.wav"
+          ],
+          "src": [
+            "common/sfx-incorrect.mp3",
+            "common/sfx-incorrect.ogg"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "common/sfx-match.wav"
+          ],
+          "src": [
+            "common/sfx-match.mp3",
+            "common/sfx-match.ogg"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "common/sfx-points.wav"
+          ],
+          "src": [
+            "common/sfx-points.mp3",
+            "common/sfx-points.ogg"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "common/sfx-press.wav"
+          ],
+          "src": [
+            "common/sfx-press.mp3",
+            "common/sfx-press.ogg"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "common/sfx-special.wav"
+          ],
+          "src": [
+            "common/sfx-special.mp3",
+            "common/sfx-special.ogg"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "game",
+      "assets": [
+        {
+          "alias": [
+            "game/game-atlas/game-atlas.json"
+          ],
+          "src": [
+            "game/game-atlas/game-atlas@1x.json",
+            "game/game-atlas/game-atlas@0.5x.json"
+          ],
+          "data": {
+            "tags": {
+              "tps": true,
+              "m": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "home",
+      "assets": [
+        {
+          "alias": [
+            "home/home-atlas/home-atlas.json"
+          ],
+          "src": [
+            "home/home-atlas/home-atlas@1x.json",
+            "home/home-atlas/home-atlas@0.5x.json"
+          ],
+          "data": {
+            "tags": {
+              "tps": true,
+              "m": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "preload",
+      "assets": [
+        {
+          "alias": [
+            "preload/cauldron-skeleton.atlas"
+          ],
+          "src": [
+            "preload/cauldron-skeleton.atlas"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "preload/cauldron-skeleton.json"
+          ],
+          "src": [
+            "preload/cauldron-skeleton.json"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "preload/cauldron-skeleton.png"
+          ],
+          "src": [
+            "preload/cauldron-skeleton.png"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "preload/preload-atlas/preload-atlas.json"
+          ],
+          "src": [
+            "preload/preload-atlas/preload-atlas@1x.json",
+            "preload/preload-atlas/preload-atlas@0.5x.json"
+          ],
+          "data": {
+            "tags": {
+              "tps": true,
+              "m": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "result",
+      "assets": []
+    },
+    {
+      "name": "result/result-atlas",
+      "assets": [
+        {
+          "alias": [
+            "result/result-atlas/result-atlas.json"
+          ],
+          "src": [
+            "result/result-atlas/result-atlas@1x.json",
+            "result/result-atlas/result-atlas@0.5x.json"
+          ],
+          "data": {
+            "tags": {
+              "m": true,
+              "tps": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
