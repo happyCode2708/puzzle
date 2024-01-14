@@ -1,15 +1,15 @@
 import 'pixi-spine';
 
 import { Application } from 'pixi.js';
-import { initAssets } from './utils/assets';
-import { navigation } from './utils/navigation';
-// import { GameScreen } from './screens/GameScreen';
-import { HomeScreen } from './screens/HomeScreen';
+import { initAssets } from './utils/assets.ts';
+import { navigation } from './utils/navigation.ts';
+import { GameScreen } from './screens/GameScreen.ts';
+import { HomeScreen } from './screens/HomeScreen.ts';
 // import { LoadScreen } from './screens/LoadScreen';
 // import { ResultScreen } from './screens/ResultScreen';
 // import { TiledBackground } from './ui/TiledBackground';
 import { getUrlParam } from './utils/getUrlParams';
-// import { sound } from '@pixi/sound';
+import { sound } from '@pixi/sound';
 
 /** The PixiJS app Application instance, shared across the project */
 export const app = new Application<HTMLCanvasElement>({
@@ -83,7 +83,8 @@ async function init() {
   } else if (getUrlParam('result') !== null) {
     // await navigation.showScreen(ResultScreen);
   } else {
-    await navigation.showScreen(HomeScreen);
+    // await navigation.showScreen(HomeScreen);
+    await navigation.showScreen(GameScreen);
   }
 }
 
