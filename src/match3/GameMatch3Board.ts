@@ -34,6 +34,8 @@ export class GameMatch3Board extends PIXI.Container {
   public pieceGrid: Match3Grid = [];
   public gameBlockCommonTypes: number[] = [];
   private gameBlockTypeNames: string[] = [];
+
+  // public popPieces: void;
   // public gameBlockTypes:
 
   constructor(match3: Match3) {
@@ -42,6 +44,7 @@ export class GameMatch3Board extends PIXI.Container {
     this.match3 = match3;
     this.boardContainer = new PIXI.Container();
     this.match3.addChild(this.boardContainer);
+    // this.popPieces = this.popPieces.bind(this);
   }
 
   public setup(boardConfig: Match3Config) {
@@ -77,7 +80,6 @@ export class GameMatch3Board extends PIXI.Container {
 
     this.createPiecesMatrix();
     this.setBoardContainerPosition();
-    console.log('piece grid', this.pieceGrid);
   }
 
   public createPiecesMatrix() {
@@ -129,11 +131,8 @@ export class GameMatch3Board extends PIXI.Container {
     this.boardContainer.x = this.boardContainer.width;
   }
 
-  //! origin
   public getPieceByPosition(position: Match3Position) {
-    console.log('all pieces', this.pieces);
     for (const piece of this.pieces) {
-      console.log(`piece ${piece.row} ${piece.column}`);
       if (piece.row === position.row && piece.column === position.column) {
         return piece;
       }
@@ -175,7 +174,8 @@ export class GameMatch3Board extends PIXI.Container {
    */
   public async popPiece(position: Match3Position, causedBySpecial = false) {
     const piece = this.getPieceByPosition(position);
-    const type = match3GetPieceType(this.grid, position);
+    // const type = match3GetPieceType(this.grid, position);
+    const type = this.getTypeByPosition(position);
     if (!type || !piece) return;
     const isSpecial = this.match3.special.isSpecial(type);
     const combo = this.match3.process.getProcessRound();
@@ -188,12 +188,28 @@ export class GameMatch3Board extends PIXI.Container {
     if (this.pieces.includes(piece)) {
       this.pieces.splice(this.pieces.indexOf(piece), 1);
     }
-    // await piece.animatePop();
+    await piece.animatePop();
     this.disposePiece(piece);
 
     // Trigger any specials related to this piece, if there is any
     await this.match3.special.trigger(type, position);
   }
+
+  /**
+   * Pop a list of pieces all together
+   * @param positions List of positions to be popped out
+   * @param causedBySpecial If this was caused by special effects
+   */
+  public popPieces = async (
+    positions: Match3Position[],
+    causedBySpecial = false
+  ) => {
+    const animPromises = [];
+    for (const position of positions) {
+      animPromises.push(this.popPiece(position, causedBySpecial));
+    }
+    await Promise.all(animPromises);
+  };
 
   // public resume() {
   //   for (const piece of this.pieces) piece.resume();

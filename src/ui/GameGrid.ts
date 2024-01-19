@@ -1,6 +1,8 @@
 import { Container, Sprite } from 'pixi.js';
 import * as _ from 'lodash';
 
+const OFFSET_PIXEL_BUG = 0.2;
+
 type SetupOptions = {
   rows: number;
   columns: number;
@@ -18,12 +20,12 @@ export class GameGrid extends Container {
     //* build the grid
     this.gameGridContent = new Container();
 
-    this.base = new Container();
-    this.gameGridContent.addChild(this.base);
-
     //* build the shadow grid;
     this.shadow = new Container();
     this.gameGridContent.addChild(this.shadow);
+
+    this.base = new Container();
+    this.gameGridContent.addChild(this.base);
 
     this.addChild(this.gameGridContent);
   }
@@ -40,8 +42,8 @@ export class GameGrid extends Container {
         const x = c * tileSize;
         const y = r * tileSize;
 
-        blockContainer.width = tileSize;
-        blockContainer.height = tileSize;
+        blockContainer.width = tileSize + OFFSET_PIXEL_BUG;
+        blockContainer.height = tileSize + OFFSET_PIXEL_BUG;
         blockContainer.x = x;
         blockContainer.y = y;
 
@@ -58,8 +60,8 @@ export class GameGrid extends Container {
       blockContainer.addChild(block);
       const x = -1 * tileSize;
       const y = r * tileSize;
-      blockContainer.width = tileSize;
-      blockContainer.height = tileSize;
+      blockContainer.width = tileSize + OFFSET_PIXEL_BUG;
+      blockContainer.height = tileSize + OFFSET_PIXEL_BUG;
       blockContainer.x = x;
       blockContainer.y = y;
       if (r === rows - 1) {
@@ -83,8 +85,8 @@ export class GameGrid extends Container {
       blockContainer.addChild(block);
       const x = columns * tileSize;
       const y = r * tileSize;
-      blockContainer.width = tileSize;
-      blockContainer.height = tileSize;
+      blockContainer.width = tileSize + OFFSET_PIXEL_BUG;
+      blockContainer.height = tileSize + OFFSET_PIXEL_BUG;
       blockContainer.x = x;
       blockContainer.y = y;
       if (r === rows - 1 || r == 0) {
@@ -108,8 +110,8 @@ export class GameGrid extends Container {
       shadowBlock.alpha = 0.3;
       shadowBlock.x = tileSize * c;
       shadowBlock.y = tileSize * rows;
-      shadowBlock.width = tileSize;
-      shadowBlock.height = tileSize;
+      shadowBlock.width = tileSize + OFFSET_PIXEL_BUG;
+      shadowBlock.height = tileSize + OFFSET_PIXEL_BUG;
       if (c === columns || c == -1) {
         shadowBlock.anchor.set(0.5);
         shadowBlock.rotation = c === -1 ? -Math.PI * 0.5 : Math.PI;
