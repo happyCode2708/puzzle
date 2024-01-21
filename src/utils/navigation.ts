@@ -66,8 +66,6 @@ class Navigation {
       app.stage.addChild(this.container);
     }
 
-    console.log('come here show screen');
-
     // Add screen to stage
     this.container.addChild(screen);
 
