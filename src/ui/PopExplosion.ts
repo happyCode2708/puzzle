@@ -2,51 +2,57 @@ import { Container, Sprite } from 'pixi.js';
 import gsap from 'gsap';
 import { randomRange } from '../utils/random';
 
-/**
- * Little explosion effect, that is used mainly for gameplay effects
- */
 export class PopExplosion extends Container {
-  /** List of animated particles */
-  private particles: Sprite[] = [];
+  private circleParticleList: Sprite[] = [];
+  private particalMaxCount = 12;
+  private duration = 0.25;
 
   constructor() {
     super();
+    this.setup();
+  }
 
-    for (let i = 0; i < 12; i++) {
+  private setup() {
+    for (let i = 0; i < this.particalMaxCount; i++) {
       const particle = Sprite.from('circle');
       particle.anchor.set(0.5);
-      particle.visible = false;
-      this.particles.push(particle);
+      this.circleParticleList.push(particle);
       this.addChild(particle);
     }
   }
 
-  /** Play the explosion animation */
   public async play() {
-    const animPromises = [];
-    for (const particle of this.particles) {
-      animPromises.push(this.playParticle(particle));
+    const animatePromises = [];
+    for (const particle of this.circleParticleList) {
+      animatePromises.push(this.playParticle(particle));
     }
-
-    await Promise.all(animPromises);
+    await Promise.all(animatePromises);
   }
 
-  /** Play a single explosion particle */
   private async playParticle(particle: Sprite) {
-    gsap.killTweensOf(particle);
     gsap.killTweensOf(particle.scale);
-    particle.visible = true;
+    gsap.killTweensOf(particle);
     particle.scale.set(0.1);
     particle.alpha = 1;
     particle.x = randomRange(-10, 10);
     particle.y = randomRange(-10, 10);
-    const x = randomRange(-50, 50);
-    const y = randomRange(-50, 50);
-    const scale = randomRange(0.4, 0.6);
-    const alpha = 0;
-    const duration = 0.5;
-    gsap.to(particle.scale, { x: scale, y: scale, duration, ease: 'sine.out' });
-    await gsap.to(particle, { x, y, alpha, duration, ease: 'quad.out' });
-    particle.visible = false;
+
+    const newX = randomRange(-50, 50);
+    const newY = randomRange(-50, 50);
+
+    const endScale = randomRange(0, 0.5);
+    gsap.to(particle.scale, {
+      x: endScale,
+      y: endScale,
+      duration: this.duration,
+      ease: 'sine.out',
+    });
+    await gsap.to(particle, {
+      x: newX,
+      y: newY,
+      alpha: 0,
+      duration: this.duration + 0.2,
+      ease: 'quad.out',
+    });
   }
 }
