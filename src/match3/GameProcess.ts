@@ -8,7 +8,11 @@ import {
   match3GetPieceType,
   match3GridToString,
 } from './Match3Utility';
-import { getChangesInPositionToApplyGravity } from './Utils';
+import {
+  getChangesInPositionToApplyGravity,
+  fillToEmptySpaceOnPieceGrid,
+  match3GetRandomType,
+} from './Utils';
 
 /**
  * Sort out the gameplay progression on the board after a player action, clearing matches
@@ -18,7 +22,7 @@ import { getChangesInPositionToApplyGravity } from './Utils';
  * The process round steps are sequenced in a queue of async functions to keep things simple,
  * in a way each step can be awaited/delayed as needed acording to what makes sense to the game flow.
  */
-export class Match3Process {
+export class GameProcess {
   /** The Match3 instance */
   private puzzlingBoard: PuzzlingBoard;
   /** Tells if it is currently processing or not */
@@ -71,7 +75,7 @@ export class Match3Process {
   }
 
   /** Clear process query and stop processing the grid */
-  public async stop() {
+  public async stopProcess() {
     if (!this.processing) return;
     this.processing = false;
     this.queue.clear();
@@ -86,6 +90,11 @@ export class Match3Process {
     );
     console.log('[Match3] ======= PROCESSING COMPLETE =======');
     this.puzzlingBoard.onProcessComplete?.();
+    this.puzzlingBoard.continueInteractChildren();
+  }
+
+  private onStartProcess() {
+    this.puzzlingBoard.stopInteractChildren();
   }
 
   /**
@@ -93,6 +102,10 @@ export class Match3Process {
    * be awaited/delayed as needed in oder to create a nice gameplay progress flow.
    */
   private async runProcessRound() {
+    this.queue.add(async () => {
+      this.onStartProcess();
+    });
+
     // Step #1 - Bump sequence number and update stats with new matches found
     this.queue.add(async () => {
       this.round += 1;
@@ -113,7 +126,7 @@ export class Match3Process {
     // Step #4 - Move down remaining pieces in the grid if there are empty spaces in their columns
     this.queue.add(async () => {
       //   No await here, to make it run simultaneously with grid refill
-      this.applyGravity();
+      await this.applyGravity();
     });
 
     // Step #5 - Create new pieces that falls from the to to fill up remaining empty spaces
@@ -121,14 +134,14 @@ export class Match3Process {
       await this.refillGrid();
     });
 
-    // Step #6 - Finish up this sequence round and check if it needs a re-run, otherwise stop processing
+    // Step #6 - Finish up this sequence roundqueudsa and check if it needs a re-run, otherwise stop processing
     this.queue.add(async () => {
       console.log(`[Match3] -- SEQUENCE ROUND #${this.round} FINISH`);
       this.processCheckpoint();
     });
 
     // this.queue.add(async () => {
-    //   // console.log(`[Match3] -- SEQUENCE ROUND #${this.round} FINISH`);
+    //   // console.log(`ga[Match3] -- SEQUENCE ROUND #${this.round} FINISH`);
     //   // this.processCheckpoint();
     //   this.stop();
     // });
@@ -249,12 +262,12 @@ export class Match3Process {
     } else {
       console.log('[Match3] Checkpoint - Nothing left to do, all good');
       // Otherwise, finish the grid processing
-      this.stop();
+      this.stopProcess();
     }
   }
   /** Fill up empty spaces in the grid with new pieces falling from the top */
   private async refillGrid() {
-    const newPieces = match3FillUp(
+    const newPieces = fillToEmptySpaceOnPieceGrid(
       this.puzzlingBoard.board.pieceGrid,
       this.puzzlingBoard.board.commonTypes
     );
@@ -266,6 +279,9 @@ export class Match3Process {
         this.puzzlingBoard.board.pieceGrid,
         position
       );
+      // const pieceType = match3GetRandomType(
+      //   this.puzzlingBoard.board.commonTypes
+      // );
       const piece = this.puzzlingBoard.board.createPiece(position, pieceType);
 
       // Count pieces per column so new pieces can be stacked up accordingly
