@@ -1,11 +1,11 @@
 import { Container } from 'pixi.js';
 import gsap from 'gsap';
 import {
-  Match3,
+  PuzzlingBoard,
   Match3OnMatchData,
   Match3OnMoveData,
   Match3OnPopData,
-} from '../match3/Match3';
+} from '../match3/PuzzlingBoard.ts';
 import { Shelf } from '../ui/Shelf';
 import { GameGrid } from '../ui/GameGrid.ts';
 import { getUrlParam, getUrlParamNumber } from '../utils/getUrlParams';
@@ -20,7 +20,7 @@ import { RippleButton } from '../ui/RippleButton';
 import { SettingsPopup } from '../popups/SettingsPopup';
 // import { PausePopup } from '../popups/PausePopup';
 // import { GameCountdown } from '../ui/GameCountdown';
-// import { GameEffects } from '../ui/GameEffects';
+import { GameEffects } from '../ui/GameEffects.ts';
 import { bgm } from '../utils/audio';
 import { userSettings } from '../utils/userSettings';
 // import { GameTimesUp } from '../ui/GameTimesUp';
@@ -35,7 +35,7 @@ export class GameScreen extends Container {
   /** Assets bundles required by this screen */
   public static assetBundles = ['game', 'common'];
   /** The Math3 game */
-  public readonly match3: Match3;
+  public readonly puzzlingBoard: PuzzlingBoard;
   /** Animated cauldron */
   // public readonly cauldron: Cauldron;
   /** Inner container for the match3 */
@@ -62,7 +62,7 @@ export class GameScreen extends Container {
   public readonly shelf?: Shelf;
   public readonly gameGrid: GameGrid;
   /** The special effects layer for the match3 */
-  // public readonly effects?: GameEffects;
+  public readonly effects?: GameEffects;
   /** Set to true when gameplay is finished */
   private finished = false;
 
@@ -96,14 +96,14 @@ export class GameScreen extends Container {
     this.gameGrid = new GameGrid();
     this.gameContainer.addChild(this.gameGrid);
 
-    this.match3 = new Match3();
-    // this.match3.onMove = this.onMove.bind(this);
+    this.puzzlingBoard = new PuzzlingBoard();
+    this.puzzlingBoard.onMove = this.onMove.bind(this);
     // this.match3.onMatch = this.onMatch.bind(this);
-    // this.match3.onPop = this.onPop.bind(this);
+    this.puzzlingBoard.onPop = this.onPop.bind(this);
     // <match3 onPop={this.onPop} />
     // this.match3.onProcessComplete = this.onProcessComplete.bind(this);
     // this.match3.onTimesUp = this.onTimesUp.bind(this);
-    this.gameContainer.addChild(this.match3);
+    this.gameContainer.addChild(this.puzzlingBoard);
 
     // this.score = new GameScore();
     // this.addChild(this.score);
@@ -127,8 +127,8 @@ export class GameScreen extends Container {
     // this.timer = new GameTimer();
     // this.cauldron.addContent(this.timer);
 
-    // this.effects = new GameEffects(this);
-    // this.addChild(this.effects);
+    this.effects = new GameEffects(this);
+    this.addChild(this.effects);
 
     // this.countdown = new GameCountdown();
     // this.addChild(this.countdown);
@@ -154,7 +154,7 @@ export class GameScreen extends Container {
     this.finished = false;
     this.shelf?.setup(match3Config);
     this.gameGrid.setup(match3Config);
-    this.match3.setup(match3Config);
+    this.puzzlingBoard.setup(match3Config);
     this.pauseButton.hide(false);
     // this.cauldron.hide(false);
     // this.score.hide(false);
@@ -183,7 +183,7 @@ export class GameScreen extends Container {
     this.gameContainer.interactiveChildren = true;
     // this.match3.resume();
   }
-
+  // move;
   /** Fully reset the game, clearing all pieces and shelf blocks */
   public reset() {
     this.shelf?.reset();
@@ -200,10 +200,6 @@ export class GameScreen extends Container {
     //! test change game container poisiton
     // this.gameContainer.y = div + this.match3.board.getHeight() * 0.5 + 20;
     this.gameContainer.y = this.gameContainer.height / 2;
-    console.log('game container pos', {
-      x: this.gameContainer.x,
-      y: this.gameContainer.y,
-    });
 
     // this.score.x = centerX;
     // this.score.y = 10;
@@ -238,7 +234,7 @@ export class GameScreen extends Container {
     // await this.countdown.hide();
     // this.score.show();
     this.pauseButton.show();
-    this.match3.startPlaying();
+    this.puzzlingBoard.startPlaying();
   }
 
   /** Hide screen with animations */
@@ -252,7 +248,7 @@ export class GameScreen extends Container {
 
   /** Fired when the player moves a piece */
   private onMove(data: Match3OnMoveData) {
-    // this.effects?.onMove(data);
+    this.effects?.onMove(data);
   }
 
   /** Fired when match3 detects one or more matches in the grid */
@@ -268,7 +264,7 @@ export class GameScreen extends Container {
 
   /** Fired when a piece is poped out fro the board */
   private onPop(data: Match3OnPopData) {
-    // this.effects?.onPop(data);
+    this.effects?.onPop(data);
   }
 
   /** Fires when the match3 grid finishes auto-processing */
