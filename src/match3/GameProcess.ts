@@ -1,5 +1,6 @@
 import { AsyncQueue } from '../utils/asyncUtils';
 import { PuzzlingBoard } from './PuzzlingBoard';
+import { poolCtor } from '../utils/pool';
 import {
   match3GetMatches,
   match3GetEmptyPositions,
@@ -13,6 +14,9 @@ import {
   fillToEmptySpaceOnPieceGrid,
   match3GetRandomType,
 } from './Utils';
+import { earthquake } from '../utils/animation';
+import { GameScreen } from '../screens/GameScreen';
+import { GameEffects } from '../ui/GameEffects.ts';
 
 /**
  * Sort out the gameplay progression on the board after a player action, clearing matches
@@ -95,6 +99,7 @@ export class GameProcess {
 
   private onStartProcess() {
     this.puzzlingBoard.stopInteractChildren();
+    this.puzzlingBoard.game.puzzlingBoardOnMatched(this.round);
   }
 
   /**
@@ -152,9 +157,9 @@ export class GameProcess {
     const matches = match3GetMatches(this.puzzlingBoard.board.pieceGrid);
     if (!matches.length) return;
     console.log('[Match3] Update stats');
-    const matchData = { matches, combo: this.getProcessRound() };
-    this.puzzlingBoard.stats.registerMatch(matchData);
-    this.puzzlingBoard.onMatch?.(matchData);
+    // const matchData = { matches, combo: this.getProcessRound() };
+    // this.puzzlingBoard.stats.registerMatch(matchData);
+    // this.puzzlingBoard.onMatch?.(matchData);
   }
 
   /** Sort out special matches in the grid */
@@ -173,26 +178,6 @@ export class GameProcess {
     }
     await Promise.all(animPromises);
   }
-
-  /** Make existing pieces fall in the grid if there are empty spaces below them */
-  // private async applyGravity() {
-  //   const changes = match3ApplyGravity(this.match3.board.pieceGrid);
-  //   console.log('[Match3] Apply gravity - moved pieces:', changes.length);
-  //   const animPromises = [];
-
-  //   for (const change of changes) {
-  //     const from = change[0];
-  //     const to = change[1];
-  //     const piece = this.match3.board.getPieceByPosition(from);
-  //     if (!piece) continue;
-  //     piece.row = to.row;
-  //     piece.column = to.column;
-  //     const newPosition = this.match3.board.getViewPositionByGridPosition(to);
-  //     animPromises.push(piece.animateFall(newPosition.x, newPosition.y));
-  //   }
-
-  //   await Promise.all(animPromises);
-  // }
 
   private async applyGravity() {
     const animatePromises = [];
@@ -213,38 +198,6 @@ export class GameProcess {
 
     await Promise.all(animatePromises.map((run) => run()));
   }
-
-  // /** Fill up empty spaces in the grid with new pieces falling from the top */
-  // private async refillGrid() {
-  //   const newPieces = match3FillUp(
-  //     this.match3.board.pieceGrid,
-  //     this.match3.board.commonTypes
-  //   );
-  //   console.log('[Match3] Refill grid - new pieces:', newPieces.length);
-  //   const animPromises = [];
-  //   const piecesPerColumn: Record<number, number> = {};
-
-  //   for (const position of newPieces) {
-  //     const pieceType = match3GetPieceType(
-  //       this.match3.board.pieceGrid,
-  //       position
-  //     );
-  //     const piece = this.match3.board.createPiece(position, pieceType);
-
-  //     // Count pieces per column so new pieces can be stacked up accordingly
-  //     if (!piecesPerColumn[piece.column]) piecesPerColumn[piece.column] = 0;
-  //     piecesPerColumn[piece.column] += 1;
-
-  //     const x = piece.x;
-  //     const y = piece.y;
-  //     const columnCount = piecesPerColumn[piece.column];
-  //     const height = this.match3.board.getHeight();
-  //     piece.y = -height * 0.5 - columnCount * this.match3.config.tileSize;
-  //     animPromises.push(piece.animateFall(x, y));
-  //   }
-
-  //   await Promise.all(animPromises);
-  // }
 
   /** Check the grid if there are empty spaces and/or matches remaining, and run another process round if needed */
   private async processCheckpoint() {
@@ -269,7 +222,8 @@ export class GameProcess {
   private async refillGrid() {
     const newPieces = fillToEmptySpaceOnPieceGrid(
       this.puzzlingBoard.board.pieceGrid,
-      this.puzzlingBoard.board.commonTypes
+      this.puzzlingBoard.board.commonTypes,
+      this.puzzlingBoard.board.specialTypes
     );
     const animPromises = [];
     const piecesPerColumn: Record<number, number> = {};
@@ -279,9 +233,7 @@ export class GameProcess {
         this.puzzlingBoard.board.pieceGrid,
         position
       );
-      // const pieceType = match3GetRandomType(
-      //   this.puzzlingBoard.board.commonTypes
-      // );
+
       const piece = this.puzzlingBoard.board.createPiece(position, pieceType);
 
       // Count pieces per column so new pieces can be stacked up accordingly
