@@ -1,19 +1,20 @@
 import * as PIXI from 'pixi.js';
-import { Match3 } from '../match3.ts';
+// import { Match3 } from '../match3.ts';
 import { Match3Config } from './Match3Config.ts';
 import { Match3Grid } from './type.ts';
 import { getAllBlockTypesInGame } from './Match3Config.ts';
 import { match3CreateGrid, match3ForEach } from './Match3Utility.ts';
 import { pool } from '../utils/pool';
 import { Match3Piece } from './Match3Piece.ts';
+import { PuzzlingBoard } from './PuzzlingBoard.ts';
 
-import { findAllMatchedsByDirection } from './Match3Utility.ts';
+// import { findAllMatchedsByDirection } from './Match3Utility.ts';
 
 import * as _ from 'lodash';
 import {
   Match3Position,
   match3SetPieceType,
-  match3GetPieceType,
+  // match3GetPieceType,
   // match3CreateGrid,
   // match3ForEach,
   // Match3Grid,
@@ -21,7 +22,7 @@ import {
 } from './Match3Utility';
 
 export class GameMatch3Board extends PIXI.Container {
-  public match3: Match3;
+  public puzzlingBoard: PuzzlingBoard;
 
   public rows: number = 0;
   public columns: number = 0;
@@ -32,18 +33,20 @@ export class GameMatch3Board extends PIXI.Container {
   public boardContainer: PIXI.Container;
 
   public pieceGrid: Match3Grid = [];
-  public gameBlockCommonTypes: number[] = [];
-  private gameBlockTypeNames: string[] = [];
+  public commonTypes: number[] = [];
+  public specialTypes: number[] = [];
+  public pieceTypes: number[] = [];
+  private pieceTypeNames: string[] = [];
 
   // public popPieces: void;
   // public gameBlockTypes:
 
-  constructor(match3: Match3) {
+  constructor(match3: PuzzlingBoard) {
     super();
 
-    this.match3 = match3;
+    this.puzzlingBoard = match3;
     this.boardContainer = new PIXI.Container();
-    this.match3.addChild(this.boardContainer);
+    this.puzzlingBoard.addChild(this.boardContainer);
     // this.popPieces = this.popPieces.bind(this);
   }
 
@@ -56,14 +59,20 @@ export class GameMatch3Board extends PIXI.Container {
     // this.pieceGrid = d
 
     const gameBlockTypeDefine = getAllBlockTypesInGame(mode);
-    this.gameBlockTypeNames = _.concat(
+    this.pieceTypeNames = _.concat(
       gameBlockTypeDefine.common,
       gameBlockTypeDefine.special
     );
 
-    this.gameBlockCommonTypes = gameBlockTypeDefine.common.map(
+    this.commonTypes = gameBlockTypeDefine.common.map(
       (blockTypeName, index) => {
         return index + 1;
+      }
+    );
+
+    this.specialTypes = gameBlockTypeDefine.common.map(
+      (blockTypeName, index) => {
+        return this.commonTypes.length + index;
       }
     );
 
@@ -75,7 +84,7 @@ export class GameMatch3Board extends PIXI.Container {
     this.pieceGrid = match3CreateGrid(
       this.rows,
       this.columns,
-      this.gameBlockCommonTypes
+      this.commonTypes
     );
 
     this.createPiecesMatrix();
@@ -94,7 +103,8 @@ export class GameMatch3Board extends PIXI.Container {
   public createPiece(position: Match3Position, pieceTypeIndex: Match3Type) {
     const { row, column } = position;
 
-    const name = this.gameBlockTypeNames[pieceTypeIndex - 1];
+    const name = this.pieceTypeNames[pieceTypeIndex - 1];
+
     const piece = pool.get(Match3Piece);
     const viewPosition = this.getViewPositionByGridPosition(position);
     // piece.onMove = (from, to) => this.match3.actions.actionMove(from, to);
@@ -105,10 +115,10 @@ export class GameMatch3Board extends PIXI.Container {
       type: pieceTypeIndex,
       size: this.tileSize,
       interactive: true,
-      highlight: this.match3.special.isSpecial(pieceTypeIndex),
+      highlight: this.puzzlingBoard.special.isSpecial(pieceTypeIndex),
       row,
       column,
-      match3: this.match3,
+      puzzlingBoard: this.puzzlingBoard,
     });
     piece.x = viewPosition.x;
     piece.y = viewPosition.y;
@@ -177,14 +187,14 @@ export class GameMatch3Board extends PIXI.Container {
     // const type = match3GetPieceType(this.grid, position);
     const type = this.getTypeByPosition(position);
     if (!type || !piece) return;
-    const isSpecial = this.match3.special.isSpecial(type);
-    const combo = this.match3.process.getProcessRound();
+    const isSpecial = this.puzzlingBoard.special.isSpecial(type);
+    const combo = this.puzzlingBoard.process.getProcessRound();
 
     // Set piece position in the grid to 0 and pop it out of the board
     match3SetPieceType(this.pieceGrid, position, 0);
     const popData = { piece, type, combo, isSpecial, causedBySpecial };
-    this.match3.stats.registerPop(popData);
-    this.match3.onPop?.(popData);
+    this.puzzlingBoard.stats.registerPop(popData);
+    this.puzzlingBoard.onPop?.(popData);
     if (this.pieces.includes(piece)) {
       this.pieces.splice(this.pieces.indexOf(piece), 1);
     }
@@ -192,7 +202,7 @@ export class GameMatch3Board extends PIXI.Container {
     this.disposePiece(piece);
 
     // Trigger any specials related to this piece, if there is any
-    await this.match3.special.trigger(type, position);
+    // await this.match3.special.trigger(type, position);
   }
 
   /**
@@ -232,6 +242,6 @@ export class GameMatch3Board extends PIXI.Container {
     if (piece.parent) {
       piece.parent.removeChild(piece);
     }
-    pool.giveBack(piece);
+    // pool.giveBack(piece);
   }
 }
