@@ -20,7 +20,7 @@ import { RippleButton } from '../ui/RippleButton';
 import { SettingsPopup } from '../popups/SettingsPopup';
 // import { PausePopup } from '../popups/PausePopup';
 // import { GameCountdown } from '../ui/GameCountdown';
-import { GameEffects } from '../ui/GameEffects.ts';
+import { Effects } from '../ui/Effects.ts';
 import { bgm } from '../utils/audio';
 import { userSettings } from '../utils/userSettings';
 // import { GameTimesUp } from '../ui/GameTimesUp';
@@ -31,6 +31,10 @@ import { match3GetConfig, Match3Mode } from '../match3/Match3Config';
 // import { userStats } from '../utils/userStats';
 
 /** The screen tha holds the Match3 game */
+const defaultOnMatchOptions = {
+  isSuperSpecial: false,
+};
+
 export class GameScreen extends Container {
   /** Assets bundles required by this screen */
   public static assetBundles = ['game', 'common'];
@@ -62,7 +66,7 @@ export class GameScreen extends Container {
   public readonly shelf?: Shelf;
   public readonly gameGrid: GameGrid;
   /** The special effects layer for the match3 */
-  public readonly effects?: GameEffects;
+  public readonly effects?: Effects;
   /** Set to true when gameplay is finished */
   private finished = false;
 
@@ -96,7 +100,7 @@ export class GameScreen extends Container {
     this.gameGrid = new GameGrid();
     this.gameContainer.addChild(this.gameGrid);
 
-    this.puzzlingBoard = new PuzzlingBoard();
+    this.puzzlingBoard = new PuzzlingBoard(this);
     this.puzzlingBoard.onMove = this.onMove.bind(this);
     // this.match3.onMatch = this.onMatch.bind(this);
     this.puzzlingBoard.onPop = this.onPop.bind(this);
@@ -127,7 +131,7 @@ export class GameScreen extends Container {
     // this.timer = new GameTimer();
     // this.cauldron.addContent(this.timer);
 
-    this.effects = new GameEffects(this);
+    this.effects = new Effects(this);
     this.addChild(this.effects);
 
     // this.countdown = new GameCountdown();
@@ -252,14 +256,25 @@ export class GameScreen extends Container {
   }
 
   /** Fired when match3 detects one or more matches in the grid */
-  private onMatch(data: Match3OnMatchData) {
-    if (data.combo > 1) {
-      // this.comboMessage.show();
-      // this.comboLevel.show();
-      // this.comboLevel.text = 'x' + data.combo;
-    }
+  // private onMatch(data: Match3OnMatchData) {
+  //   const { combo: comboCount } = data;
+  //   if (data.combo > 1) {
+  //     // this.comboMessage.show();
+  //     // this.comboLevel.show();
+  //     // this.comboLevel.text = 'x' + data.combo;
+  //   }
 
-    // this.effects?.onMatch(data);
+  //   // this.effects?.onMatchEffect(comboCount);
+  // }
+
+  public puzzlingBoardOnMatched(
+    comboCount: number,
+    options?: Partial<typeof defaultOnMatchOptions>
+  ) {
+    const opts = { ...defaultOnMatchOptions, ...options };
+    const { isSuperSpecial } = opts;
+
+    this.effects?.onMatchEffect(comboCount, isSuperSpecial);
   }
 
   /** Fired when a piece is poped out fro the board */

@@ -96,11 +96,16 @@ export class Effects extends Container {
     // }
   }
 
-  public onMatchEffect(comboCount: number) {
+  public onMatchEffect(comboCount: number, isSuperSpecial: boolean) {
     sfx.play('common/sfx-match.wav', {
       speed: 0.95 + comboCount * 0.05,
       volume: 0.4,
     });
+
+    if (isSuperSpecial) {
+      earthquake(this.game.pivot, 50);
+      return;
+    }
 
     if (comboCount > 1) {
       earthquake(this.game.pivot, Math.min(1 + comboCount, 20));
