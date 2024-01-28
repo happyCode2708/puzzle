@@ -2,7 +2,7 @@ import { AsyncQueue } from '../utils/asyncUtils';
 import { PuzzlingBoard } from './PuzzlingBoard';
 import { poolCtor } from '../utils/pool';
 import {
-  match3GetMatches,
+  // match3GetMatches,
   match3GetEmptyPositions,
   match3ApplyGravity,
   match3FillUp,
@@ -13,6 +13,8 @@ import {
   getChangesInPositionToApplyGravity,
   fillToEmptySpaceOnPieceGrid,
   match3GetRandomType,
+  match3GetMatches,
+  sleep,
 } from './Utils';
 import { earthquake } from '../utils/animation';
 import { GameScreen } from '../screens/GameScreen';
@@ -35,6 +37,8 @@ export class GameProcess {
   private round = 0;
   /** The list of queued actions that the grid processing will take */
   private queue: AsyncQueue;
+
+  //* trigger super earthquake
 
   constructor(puzzlingBoard: PuzzlingBoard) {
     this.puzzlingBoard = puzzlingBoard;
@@ -119,9 +123,9 @@ export class GameProcess {
     });
 
     // Step #2 - Process and clear all special matches
-    // this.queue.add(async () => {
-    //   await this.processSpecialMatches();
-    // });
+    this.queue.add(async () => {
+      await this.processSpecialMatches();
+    });
 
     // Step #3 - Process and clear remaining common matches
     this.queue.add(async () => {
@@ -154,7 +158,7 @@ export class GameProcess {
 
   /** Update gameplay stats with new matches found in the grid */
   private async updateStats() {
-    const matches = match3GetMatches(this.puzzlingBoard.board.pieceGrid);
+    const matches = match3GetMatches(this.puzzlingBoard, 'both');
     if (!matches.length) return;
     console.log('[Match3] Update stats');
     // const matchData = { matches, combo: this.getProcessRound() };
@@ -164,15 +168,31 @@ export class GameProcess {
 
   /** Sort out special matches in the grid */
   private async processSpecialMatches() {
-    console.log('[Match3] Process special matches');
-    await this.puzzlingBoard.special.process();
+    const matches = match3GetMatches(this.puzzlingBoard, 'special');
+    const animPromises = [];
+
+    if (matches?.[0]) {
+      // if (match?.[0].type > this.puzzlingBoard.board.commonTypes?.length + 1) {
+      const allPops = [];
+      for (let r = 0; r < this.puzzlingBoard.board.rows; r++) {
+        for (let c = 0; c < this.puzzlingBoard.board.columns; c++) {
+          allPops.push({ row: r, column: c });
+        }
+      }
+      animPromises.push(this.puzzlingBoard.board.popPieces(allPops));
+      await Promise.all(animPromises);
+      this.puzzlingBoard.game.puzzlingBoardOnMatched(this.round, {
+        isSuperSpecial: true,
+      });
+    }
   }
 
   /** Clear all matches in the grid */
   private async processRegularMatches() {
     console.log('[Match3] Process regular matches');
-    const matches = match3GetMatches(this.puzzlingBoard.board.pieceGrid);
+    const matches = match3GetMatches(this.puzzlingBoard, 'regular');
     const animPromises = [];
+
     for (const match of matches) {
       animPromises.push(this.puzzlingBoard.board.popPieces(match));
     }
@@ -202,7 +222,11 @@ export class GameProcess {
   /** Check the grid if there are empty spaces and/or matches remaining, and run another process round if needed */
   private async processCheckpoint() {
     // Check if there are any remaining matches or empty spots
-    const newMatches = match3GetMatches(this.puzzlingBoard.board.pieceGrid);
+    const newRegularMatches = match3GetMatches(this.puzzlingBoard, 'regular');
+    const newSpecialMatches = match3GetMatches(this.puzzlingBoard, 'special');
+
+    const newMatches = [...newRegularMatches, ...newSpecialMatches];
+
     const emptySpaces = match3GetEmptyPositions(
       this.puzzlingBoard.board.pieceGrid
     );
