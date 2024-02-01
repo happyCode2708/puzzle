@@ -1,6 +1,7 @@
 import gsap from 'gsap';
 import CustomEase from 'gsap/CustomEase';
 import { randomRange } from './random';
+import { detectDefaults } from 'pixi.js';
 
 gsap.registerPlugin(CustomEase);
 
@@ -58,20 +59,38 @@ export function resumeTweens(targets: gsap.TweenTarget) {
  * @param power How strong/far is the random shake
  * @param duration For how long it will be shaking
  */
+// export async function earthquake(
+//   target: { x: number; y: number },
+//   power = 8,
+//   duration = 0.5
+// ) {
+//   const shake = { power };
+//   await gsap.to(shake, {
+//     power: 0,
+//     duration,
+//     ease: 'linear',
+//     onUpdate: () => {
+//       if (!target) return;
+//       target.x = randomRange(-shake.power, shake.power);
+//       target.y = randomRange(-shake.power, shake.power);
+//     },
+//   });
+// }
+
 export async function earthquake(
   target: { x: number; y: number },
-  power = 8,
+  shakePower = 8,
   duration = 0.5
 ) {
-  const shake = { power };
-  await gsap.to(shake, {
-    power: 0,
+  const shakeConfig = { shakePower };
+  await gsap.to(shakeConfig, {
+    shakePower: 0,
     duration,
     ease: 'linear',
     onUpdate: () => {
-      if (!target) return;
-      target.x = randomRange(-shake.power, shake.power);
-      target.y = randomRange(-shake.power, shake.power);
+      const { shakePower: newShakePower } = shakeConfig;
+      target.x = randomRange(-newShakePower, newShakePower);
+      target.y = randomRange(-newShakePower, newShakePower);
     },
   });
 }
