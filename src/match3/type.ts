@@ -6,6 +6,8 @@ export type Match3Grid = Match3Type[][];
 
 /** Pair of row & column representing grid coordinates */
 export type Match3Position = { row: number; column: number };
+export type PiecePosition = [number, number];
+export type PiecePositionInObject = { x: number; y: number };
 
 /** Orientation for match checks */
 
@@ -13,3 +15,5 @@ export const match3ValidModes = ['test', 'easy', 'normal', 'hard'] as const;
 
 /** The game mode type */
 export type Match3Mode = (typeof match3ValidModes)[number];
+
+export type MatchFormat = 'regular' | 'special' | 'both';
