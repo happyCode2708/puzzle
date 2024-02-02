@@ -1,4 +1,4 @@
-import { Match3 } from './Match3';
+import { PuzzlingBoard } from './PuzzlingBoard';
 import { Match3Piece } from './Match3Piece';
 import {
   Match3Position,
@@ -21,13 +21,13 @@ interface Match3ActionsConfig {
  */
 export class Match3Actions {
   /** The match3 instance */
-  public match3: Match3;
+  public puzzlingBoard: PuzzlingBoard;
 
   /** Free all moves, meaning that they will always be valid regardles of matching results */
   public freeMoves = false;
 
-  constructor(match3: Match3) {
-    this.match3 = match3;
+  constructor(puzzlingBoard: PuzzlingBoard) {
+    this.puzzlingBoard = puzzlingBoard;
   }
 
   /**
@@ -46,18 +46,17 @@ export class Match3Actions {
    * @param to The destination grid position of the move
    */
   public async actionMove(from: Match3Position, to: Match3Position) {
-    if (!this.match3.isPlaying()) return;
+    if (!this.puzzlingBoard.isPlaying()) return;
 
     // Check if there are pieces on each of the 2 positions, and if they are not locked
-    const pieceA = this.match3.board.getPieceByPosition(from);
-    const pieceB = this.match3.board.getPieceByPosition(to);
-    console.log('move point', { pieceA, pieceB });
+    const pieceA = this.puzzlingBoard.board.getPieceByPosition(from);
+    const pieceB = this.puzzlingBoard.board.getPieceByPosition(to);
 
     if (!pieceA || !pieceB || pieceA.isLock() || pieceB.isLock()) return;
 
     // Check the grid types currently involved in the move
-    const typeA = this.match3.board.getTypeByPosition(from);
-    const typeB = this.match3.board.getTypeByPosition(to);
+    const typeA = this.puzzlingBoard.board.getTypeByPosition(from);
+    const typeB = this.puzzlingBoard.board.getTypeByPosition(to);
 
     if (!typeA || !typeB) return;
 
@@ -71,17 +70,17 @@ export class Match3Actions {
    * @param position The grid position of the action
    */
   public async actionTap(position: Match3Position) {
-    if (!this.match3.isPlaying()) return;
+    if (!this.puzzlingBoard.isPlaying()) return;
 
     // Check the piece and type in the touched grid position
-    const piece = this.match3.board.getPieceByPosition(position);
-    const type = this.match3.board.getTypeByPosition(position);
-    if (!piece || !this.match3.special.isSpecial(type) || piece.isLock())
+    const piece = this.puzzlingBoard.board.getPieceByPosition(position);
+    const type = this.puzzlingBoard.board.getTypeByPosition(position);
+    if (!piece || !this.puzzlingBoard.special.isSpecial(type) || piece.isLock())
       return;
 
     // Execute the tap action, popping the piece out which will trigger its special effects
-    await this.match3.board.popPiece(piece);
-    this.match3.process.start();
+    await this.puzzlingBoard.board.popPiece(piece);
+    this.puzzlingBoard.process.start();
   }
 
   /** Check if a move from origin to destination is valid */
@@ -91,33 +90,32 @@ export class Match3Actions {
     //? remove old stupid code
     // const type = match3GetPieceType(this.match3.board.pieceGrid, from);
 
-    const type = this.match3.board.getTypeByPosition(from);
-    const specialFrom = this.match3.special.isSpecial(type);
-    const specialTo = this.match3.special.isSpecial(
-      match3GetPieceType(this.match3.board.pieceGrid, to)
+    const type = this.puzzlingBoard.board.getTypeByPosition(from);
+    const specialFrom = this.puzzlingBoard.special.isSpecial(type);
+    const specialTo = this.puzzlingBoard.special.isSpecial(
+      match3GetPieceType(this.puzzlingBoard.board.pieceGrid, to)
     );
 
     // Always allow move that either or both are special pieces
     if (specialFrom || specialTo) return true;
 
     // Clone current grid so we can manipulate it safely
-    // const tempGrid = match3CloneGrid(this.match3.board.pieceGrid);
+    const tempGrid = _.cloneDeep(this.puzzlingBoard.board.pieceGrid);
 
     // Swap pieces in the temporary cloned grid
 
-    const typeA = this.match3.board.getTypeByPosition(from);
-    const typeB = this.match3.board.getTypeByPosition(to);
+    const typeA = this.puzzlingBoard.board.getTypeByPosition(from);
+    const typeB = this.puzzlingBoard.board.getTypeByPosition(to);
 
     if (typeA !== undefined && typeB !== undefined) {
-      this.match3.board.setTypeByPosition(from, typeB);
-      this.match3.board.setTypeByPosition(to, typeA);
+      tempGrid[from.row][from.column] = typeB;
+      tempGrid[to.row][to.column] = typeA;
+      //   this.puzzlingBoard.board.setTypeByPosition(from, typeB);
+      //   this.puzzlingBoard.board.setTypeByPosition(to, typeA);
     }
 
     // Get all matches created by this move in the temporary grid
-    const newMatches = match3GetMatches(this.match3.board.pieceGrid, [
-      from,
-      to,
-    ]);
+    const newMatches = match3GetMatches(tempGrid, [from, to]);
 
     // Only validate moves that creates new matches
     return newMatches.length >= 1;
@@ -132,20 +130,21 @@ export class Match3Actions {
 
     // Find out view positions based on grid positions
     const viewPositionA =
-      this.match3.board.getViewPositionByGridPosition(positionA);
+      this.puzzlingBoard.board.getViewPositionByGridPosition(positionA);
     const viewPositionB =
-      this.match3.board.getViewPositionByGridPosition(positionB);
+      this.puzzlingBoard.board.getViewPositionByGridPosition(positionB);
 
     // Validate move if that creates any matches or if free moves is enabled
     const valid = this.validateMove(positionA, positionB);
 
     // Fire the callback, even if the move is invalid
-    // this.match3.onMove?.({
-    //   from: positionA,
-    //   to: positionB,
-    //   valid,
-    // });
+    this.puzzlingBoard.onMove?.({
+      from: positionA,
+      to: positionB,
+      valid,
+    });
 
+    // this.puzzlingBoard.stopInteractChildren();
     await Promise.all([
       pieceA.animateMove({
         to: { x: viewPositionB.x, y: viewPositionB.y },
@@ -171,7 +170,11 @@ export class Match3Actions {
     }
 
     if (valid) {
-      this.match3.process.start();
+      const typeA = this.puzzlingBoard.board.getTypeByPosition(positionA);
+      const typeB = this.puzzlingBoard.board.getTypeByPosition(positionB);
+      this.puzzlingBoard.board.setTypeByPosition(positionA, typeB);
+      this.puzzlingBoard.board.setTypeByPosition(positionB, typeA);
+      this.puzzlingBoard.process.start();
     }
 
     // Animate pieces to their new positions
